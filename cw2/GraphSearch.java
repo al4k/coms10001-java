@@ -50,8 +50,13 @@ class GraphSearch {
     for(Node ns : graph.nodes()){
       flag = true;
       for(Node nb : ns.neighbours()){
-        if(!graph.find(nb.name()).neighbours().contains(ns))
-          flag = false;
+        if(!flag){break;}
+        for(Node nb2 : ns.neighbours()){
+          if(!flag){break;}
+          if(!nb.name().equals(nb2.name()) && !graph.find(nb.name()).neighbours().contains(nb2)){
+            flag = false;
+          }
+        }
       }
       if(flag)
         output.add(ns);
