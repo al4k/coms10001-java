@@ -74,11 +74,7 @@ class GraphSearch {
 
   private static boolean hasSameElements(List<Node> a, List<Node> b){
 /*
-    print("comparing lists ");
-    printList(a);
-    print(", ");
-    printList(b);
-    System.out.println();
+    print("comparing lists "); printList(a); print(", "); printList(b); System.out.println();
 */
     if(a.size() != b.size()){return false;}
     for(Node n : a){
@@ -121,38 +117,30 @@ class GraphSearch {
       valid.clear();
       valid.add(ns);
 /*
-      print("node "+ns.name()+": candidates ");
-      printList(candidates);
-      System.out.println();
+      print("node "+ns.name()+": candidates "); printList(candidates); System.out.println();
 */
       for(Node nb : ns.neighbours()){
-
         if(!valid.contains(nb) && listContains(nb.neighbours(),valid)){
           valid.add(nb);
 /*
-          print("--node "+nb.name()+" added. valid=");
-          printList(valid);
-          System.out.println();
+          print("--node "+nb.name()+" added. valid="); printList(valid); System.out.println();
 */
         }
-
         if(valid.size() == n){
           if(listArrayContains(cliques,valid)){
-/*
-            print("--clique already added : ");
-            printList(valid);
-            System.out.println();
-*/
             break;
+/*
+            print("--clique already added : "); printList(valid); System.out.println();
+*/
           }
+          total++;
+          cliques.add(new ArrayList<Node>(valid));
+          break;
 /*
           print("--clique found: ");
           printList(valid);
           System.out.println();
 */
-          total++;
-          cliques.add(new ArrayList<Node>(valid));
-          break;
         }
       }
     }
