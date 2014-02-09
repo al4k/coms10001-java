@@ -64,10 +64,98 @@ class GraphSearch {
     return output;
   }
 
-  public static int findNumberOfCliques(Graph graph, int n){
-    boolean flag;
+  private static void printList(List<Node> l){
+    print("{");
+    for(Node n : l){
+      print(n.name()+" ");
+    }
+    print("}");
+  }
+
+  private static boolean hasSameElements(List<Node> a, List<Node> b){
+/*
+    print("comparing lists ");
+    printList(a);
+    print(", ");
+    printList(b);
+    System.out.println();
+*/
+    if(a.size() != b.size()){return false;}
+    for(Node n : a){
+      if(!b.contains(n))
+        return false;
+    }
+    return true;
+  }
+
+  private static boolean listContains(List<Node> list, List<Node> contains){
+    int i = 0;
+    for(Node ns : contains){
+      if(list.contains(ns))
+        i++;
+      if(i==contains.size() || i==2)
+        return true;
+    }
+    return false;
+  }
+
+  private static boolean listArrayContains(ArrayList<ArrayList<Node>> list, List<Node> contains){
+    for(ArrayList<Node> ns : list){
+      if(hasSameElements(ns,contains))
+        return true;
+    }
+    return false;
+  }
+
+  public int findNumberOfCliques(Graph graph, int n){
     int total = 0;
-    // TODO
+    ArrayList<ArrayList<Node>> cliques = new ArrayList<ArrayList<Node>>();
+    ArrayList<Node> valid = new ArrayList<Node>();
+    List<Node> candidates = new ArrayList<Node>();
+
+    for(Node ns : graph.nodes()){
+      if(ns.neighbours().size() < n-1){continue;}
+
+      candidates = ns.neighbours();
+      candidates.add(ns);
+      valid.clear();
+      valid.add(ns);
+/*
+      print("node "+ns.name()+": candidates ");
+      printList(candidates);
+      System.out.println();
+*/
+      for(Node nb : ns.neighbours()){
+
+        if(!valid.contains(nb) && listContains(nb.neighbours(),valid)){
+          valid.add(nb);
+/*
+          print("--node "+nb.name()+" added. valid=");
+          printList(valid);
+          System.out.println();
+*/
+        }
+
+        if(valid.size() == n){
+          if(listArrayContains(cliques,valid)){
+/*
+            print("--clique already added : ");
+            printList(valid);
+            System.out.println();
+*/
+            break;
+          }
+/*
+          print("--clique found: ");
+          printList(valid);
+          System.out.println();
+*/
+          total++;
+          cliques.add(new ArrayList<Node>(valid));
+          break;
+        }
+      }
+    }
     return total;
   }
 
