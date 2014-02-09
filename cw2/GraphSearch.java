@@ -25,16 +25,6 @@ class GraphSearch {
     }
   }
 
-  public static void printGraph(Graph g){
-    for(Node n : g.nodes()){
-        print(n.name()+" ");
-        for(Node nb : n.neighbours()){
-          print(nb.name()+" ");
-        }
-        System.out.println();
-    }
-  }
-
   public static List<Node> neighbourSearch(Graph graph, int n){
     List<Node> output = new ArrayList<Node>();
     for(Node ns : graph.nodes()){
@@ -62,14 +52,6 @@ class GraphSearch {
         output.add(ns);
     }
     return output;
-  }
-
-  private static void printList(List<Node> l){
-    print("{");
-    for(Node n : l){
-      print(n.name()+" ");
-    }
-    print("}");
   }
 
   private static boolean hasSameElements(List<Node> a, List<Node> b){
@@ -137,9 +119,7 @@ class GraphSearch {
           cliques.add(new ArrayList<Node>(valid));
           break;
 /*
-          print("--clique found: ");
-          printList(valid);
-          System.out.println();
+          print("--clique found: "); printList(valid); System.out.println();
 */
         }
       }
@@ -153,6 +133,26 @@ class GraphSearch {
 
   private static void print(Object s){
     System.out.print(s);
+  }
+
+  @Deprecated
+  private static void printList(List<Node> l){
+    print("{");
+    for(Node n : l){
+      print(n.name()+" ");
+    }
+    print("}");
+  }
+
+  @Deprecated
+  public static void printGraph(Graph g){
+    for(Node n : g.nodes()){
+        print(n.name()+" ");
+        for(Node nb : n.neighbours()){
+          print(nb.name()+" ");
+        }
+        System.out.println();
+    }
   }
 
   public static void main(String[] args){
