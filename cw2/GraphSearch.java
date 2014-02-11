@@ -31,7 +31,7 @@ class GraphSearch {
     List<Node> output = new ArrayList<Node>();
     for(Node ns : graph.nodes()){
       if(ns.degree() >= n)
-        output.add(ns);      
+        output.add(ns);
     }
     return output;
   }
@@ -81,36 +81,36 @@ class GraphSearch {
     return false;
   }
 
-  public List<List<Node>> findPossibleCliques(List<Node> set, Node current, int k){
+  private List<List<Node>> findPossibleCliques(List<Node> set, Node current, int k){
 	List<List<Node>> output = new ArrayList<List<Node>>();
 	for(List<Node> s : processSubsets(set, k)){
       if(s.contains(current)){
     	s.remove(current);
-    	output.add(s);  
-      } 
+    	output.add(s);
+      }
 	}
 	return output;
   }
-  
-  public List<List<Node>> processSubsets( List<Node> set, int k ) {
-	    if ( k > set.size() ) {
+
+  private List<List<Node>> processSubsets(List<Node> set, int k) {
+	    if(k > set.size()){
 	      k = set.size();
 	    }
 	    List<List<Node>> result = new ArrayList<List<Node>>();
 	    List<Node> subset = new ArrayList<Node>(k);
-	    for ( int i = 0; i < k; i++ ) {
-	      subset.add( null );
+	    for(int i = 0; i < k; i++) {
+	      subset.add(null);
 	    }
-	    return processLargerSubsets( result, set, subset, 0, 0 );
+	    return processLargerSubsets(result, set, subset, 0, 0);
 	  }
 
-  private List<List<Node>> processLargerSubsets( List<List<Node>> result, List<Node> set, List<Node> subset, int subsetSize, int nextIndex ) {
-    if ( subsetSize == subset.size() ) {
-      result.add(new ArrayList<Node>(subset) );
-    } else {
-      for ( int j = nextIndex; j < set.size(); j++ ) {
-        subset.set( subsetSize, set.get( j ) );
-        processLargerSubsets( result, set, subset, subsetSize + 1, j + 1 );
+  private List<List<Node>> processLargerSubsets(List<List<Node>> result, List<Node> set, List<Node> subset, int subsetSize, int nextIndex) {
+    if(subsetSize == subset.size()){
+      result.add(new ArrayList<Node>(subset));
+    }else{
+      for(int j = nextIndex; j < set.size(); j++) {
+        subset.set(subsetSize, set.get(j));
+        processLargerSubsets(result, set, subset, subsetSize+1, j+1);
       }
     }
     return result;
@@ -118,8 +118,8 @@ class GraphSearch {
   
   public int findNumberOfCliques(Graph graph, int n){
 	if(n==1)
-		return graph.nodes().size();
-	  
+	  return graph.nodes().size();
+
     int total = 0;
     ArrayList<ArrayList<Node>> cliques = new ArrayList<ArrayList<Node>>();
     Collection<List<Node>> possibleCliques = new ArrayList<List<Node>>();
@@ -136,37 +136,35 @@ class GraphSearch {
       valid.add(ns);
 
       //print("node "+ns.name()+": candidates "); printList(candidates); System.out.println();
-      
       //print("possible permutations: "); printArrayList(possibleCliques); System.out.println();
-      
+
       for(List<Node> clique : possibleCliques){
-    	  for(Node node : clique){
-    	    if(!valid.contains(node) && listContains(node.neighbours(),valid)){
-    	    	valid.add(node);
-    	        //print("--node "+node.name()+" added. valid="); printList(valid); System.out.println();
-    	        
-    	        if(valid.size() == n){
-    		        if(listArrayContains(cliques,valid)){   
-    		          //print("--clique already added : "); printList(valid); System.out.println();	          
-    		        }else{
-    		          total++;
-    		          cliques.add(new ArrayList<Node>(valid)); 
-    		          //print("--clique found: "); printList(valid); System.out.println();
-    		        }
-    		        valid.clear();
-	    	    	valid.add(ns);
-	    	    	break;
-    		      }
-    	    }else{
-    	    	//print("--node "+node.name()+" invalid"); System.out.println();
-    	    	valid.clear();
-    	    	valid.add(ns);
-    	    	break;
-    	    }
-    	  }
-      }
-    }
-    return total;
+		for(Node node : clique){
+		  if(!valid.contains(node) && listContains(node.neighbours(),valid)){
+			valid.add(node);
+			//print("--node "+node.name()+" added. valid="); printList(valid); System.out.println();
+			if(valid.size() == n){
+			  if(listArrayContains(cliques,valid)){   
+				//print("--clique already added : "); printList(valid); System.out.println();	          
+			  }else{
+				total++;
+				cliques.add(new ArrayList<Node>(valid)); 
+				//print("--clique found: "); printList(valid); System.out.println();
+			  }
+			  valid.clear();
+			  valid.add(ns);
+			  break;
+			}
+		  }else{
+			//print("--node "+node.name()+" invalid"); System.out.println();
+			valid.clear();
+			valid.add(ns);
+			break;
+			}
+		  }
+	  }
+	}
+	return total;
   }
 
   private static int toInt(String s){
