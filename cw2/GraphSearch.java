@@ -1,5 +1,3 @@
-package cw2;
-
 import java.util.*;
 
 class GraphSearch {
@@ -68,7 +66,7 @@ class GraphSearch {
   private static boolean listContains(List<Node> list, List<Node> contains){
     for(Node ns : contains){
       if(!list.contains(ns))
-    	return false;    
+        return false;    
     }
     return true;
   }
@@ -82,27 +80,27 @@ class GraphSearch {
   }
 
   private List<List<Node>> findPossibleCliques(List<Node> set, Node current, int k){
-	List<List<Node>> output = new ArrayList<List<Node>>();
-	for(List<Node> s : processSubsets(set, k)){
+    List<List<Node>> output = new ArrayList<List<Node>>();
+    for(List<Node> s : processSubsets(set, k)){
       if(s.contains(current)){
-    	s.remove(current);
-    	output.add(s);
+        s.remove(current);
+        output.add(s);
       }
-	}
-	return output;
+    }
+    return output;
   }
 
   private List<List<Node>> processSubsets(List<Node> set, int k) {
-	    if(k > set.size()){
-	      k = set.size();
-	    }
-	    List<List<Node>> result = new ArrayList<List<Node>>();
-	    List<Node> subset = new ArrayList<Node>(k);
-	    for(int i = 0; i < k; i++) {
-	      subset.add(null);
-	    }
-	    return processLargerSubsets(result, set, subset, 0, 0);
-	  }
+    if(k > set.size()){
+      k = set.size();
+    }
+    List<List<Node>> result = new ArrayList<List<Node>>();
+    List<Node> subset = new ArrayList<Node>(k);
+    for(int i = 0; i < k; i++) {
+      subset.add(null);
+    }
+    return processLargerSubsets(result, set, subset, 0, 0);
+  }
 
   private List<List<Node>> processLargerSubsets(List<List<Node>> result, List<Node> set, List<Node> subset, int subsetSize, int nextIndex) {
     if(subsetSize == subset.size()){
@@ -117,8 +115,8 @@ class GraphSearch {
   }
   
   public int findNumberOfCliques(Graph graph, int n){
-	if(n==1)
-	  return graph.nodes().size();
+    if(n==1)
+      return graph.nodes().size();
 
     int total = 0;
     ArrayList<ArrayList<Node>> cliques = new ArrayList<ArrayList<Node>>();
@@ -139,32 +137,32 @@ class GraphSearch {
       //print("possible permutations: "); printArrayList(possibleCliques); System.out.println();
 
       for(List<Node> clique : possibleCliques){
-		for(Node node : clique){
-		  if(!valid.contains(node) && listContains(node.neighbours(),valid)){
-			valid.add(node);
-			//print("--node "+node.name()+" added. valid="); printList(valid); System.out.println();
-			if(valid.size() == n){
-			  if(listArrayContains(cliques,valid)){   
-				//print("--clique already added : "); printList(valid); System.out.println();	          
-			  }else{
-				total++;
-				cliques.add(new ArrayList<Node>(valid)); 
-				//print("--clique found: "); printList(valid); System.out.println();
-			  }
-			  valid.clear();
-			  valid.add(ns);
-			  break;
-			}
-		  }else{
-			//print("--node "+node.name()+" invalid"); System.out.println();
-			valid.clear();
-			valid.add(ns);
-			break;
-			}
-		  }
-	  }
-	}
-	return total;
+        for(Node node : clique){
+          if(!valid.contains(node) && listContains(node.neighbours(),valid)){
+            valid.add(node);
+            //print("--node "+node.name()+" added. valid="); printList(valid); System.out.println();
+            if(valid.size() == n){
+              if(listArrayContains(cliques,valid)){   
+                //print("--clique already added : "); printList(valid); System.out.println();	          
+              }else{
+                total++;
+                cliques.add(new ArrayList<Node>(valid)); 
+                //print("--clique found: "); printList(valid); System.out.println();
+              }
+              valid.clear();
+              valid.add(ns);
+              break;
+            }
+          }else{
+            //print("--node "+node.name()+" invalid"); System.out.println();
+            valid.clear();
+            valid.add(ns);
+            break;
+          }
+        }
+      }
+    }
+    return total;
   }
 
   private static int toInt(String s){
@@ -187,10 +185,10 @@ class GraphSearch {
   @Deprecated
   private static void printArrayList(Collection<List<Node>> ls){
     print("{");
-	for(List<Node> l : ls){
+    for(List<Node> l : ls){
       printList(l); print(",");
-	}
-	print("}");
+    }
+    print("}");
   }
   
   public static void printGraph(Graph g){
