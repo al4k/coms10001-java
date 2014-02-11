@@ -1,5 +1,3 @@
-package cw2;
-
 import java.util.*;
 
 class GraphSearch {
