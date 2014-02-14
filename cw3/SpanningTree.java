@@ -1,5 +1,3 @@
-package cw3;
-
 import java.text.*;
 import java.util.*;
 

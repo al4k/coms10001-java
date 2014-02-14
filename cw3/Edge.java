@@ -1,5 +1,3 @@
-package cw3;
-
 /**
  * Class that represents a graph edge. The edges 
  * define the structure of the graph as they constitute

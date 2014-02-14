@@ -1,5 +1,3 @@
-package cw3;
-
 /**
  * Class representing a node of the graph
  */
