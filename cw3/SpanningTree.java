@@ -1,15 +1,7 @@
 package cw3;
 
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.text.*;
+import java.util.*;
 
 class SpanningTree {
 
@@ -30,7 +22,7 @@ class SpanningTree {
 				println("Hours of disrupted travel: "+twodp.format(hourCost(r.graph()))+"h");
 				println("Completion date: "+dateComplete(r.graph()));
 			}else if(args[0].equals("-p3")){
-				Graph g = computeSpanningTree(r.graph());
+				Graph g = minSpanningTree(r.graph());
 				println("Price: £"+twodp.format(governmentCost(g)));
 				println("Hours of disrupted travel: "+twodp.format(hourCost(g))+"h");
 				println("Completion date: "+dateComplete(g));
@@ -86,35 +78,38 @@ class SpanningTree {
 		return total;
 	}
 	
+	// Sort by edge weight
 	private List<Edge> quickSort(List<Edge> edges){
 		if(!edges.isEmpty()){
 			Edge pivot = edges.get(0);
 			List<Edge> less = new ArrayList<Edge>();
 			List<Edge> pivotList = new ArrayList<Edge>();
-			List<Edge> more = new ArrayList<Edge>();
+			List<Edge> greater = new ArrayList<Edge>();
 
 			for(Edge e : edges){
 				if(e.weight() < pivot.weight()){
 					less.add(e);
 				}else if(e.weight() > pivot.weight()){
-					more.add(e);
+					greater.add(e);
 				}else{
 					pivotList.add(e);
 				}
 			}
 			less = quickSort(less);
-			more = quickSort(more);
+			greater = quickSort(greater);
 			less.addAll(pivotList);
-			less.addAll(more);
+			less.addAll(greater);
 			return less;
 		}
 		return edges;
 	}
 	
-	private Graph computeSpanningTree(Graph g){
+	private Graph minSpanningTree(Graph g){
 		List<Edge> edges = quickSort(g.edges());
 		HashMap<String, List<String>> forest = new HashMap<String, List<String>>();
 		Graph output = new Graph();
+		
+		// Create a tree for each node and place in forest. Add nodes to output.
 		for(Node n : g.nodes()){
 			List<String> tree = new ArrayList<String>();
 			tree.add(n.name());
@@ -122,30 +117,32 @@ class SpanningTree {
 			output.add(n);
 		}
 		
+		/* 
+		 * In ascending edge weight, accumulate the connected nodes and build on trees in forest.
+		 * Repeat to find the minimum weight graph
+		*/
 		while(!edges.isEmpty()){
 			Edge e = edges.remove(0);
-			List<String> connects1 = forest.get(e.id1());
-			List<String> connects2 = forest.get(e.id2());
-			if(connects1.equals(connects2))
+			List<String> nodes1 = forest.get(e.id1());
+			List<String> nodes2 = forest.get(e.id2());
+			if(nodes1.equals(nodes2))
 				continue;
 			
 			output.add(e);
-			connects1.addAll(connects2);
-			for(String n : connects1){
-				forest.put(n, connects1);
+			nodes1.addAll(nodes2);
+			
+			for(String n : nodes1){
+				forest.put(n, nodes1);
 			}
-			if(connects1.size() == g.nodes().size())
+			if(nodes1.size() == g.nodes().size())
 				break;	
 		}
+		
 		return output;
 	}
 	
 	private static void println(Object s){
 		System.out.println(s);
-	}
-	
-	private static void print(Object s){
-		System.out.print(s);
 	}
 	
 	public static void main(String[] args) {
