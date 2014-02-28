@@ -14,11 +14,11 @@ public class Game {
 		state.setMapFilename("map.jpg");
 
         PositionReader p = new PositionReader();
-
+        // Initialise and start GUI
         GUI gui = new GUI();
 		gui.registerMapVisualisable(state);
         gui.registerInitialisable(state);
-		//initialise then start your GUI
+        gui.registerPlayerVisualisable(state);
 		gui.run();
 	}
 }

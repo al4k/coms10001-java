@@ -1,5 +1,5 @@
 import javax.swing.text.Position;
-import java.awt.*;
+import java.awt.Point;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,16 +68,15 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
             int[] mrXTickets =       {3, 4, 3, 2, numberOfDetectives};
 
             //Initialise detectives
-            for(int i=0; i<numberOfDetectives; i++)
+            int i;
+            for(i=0; i<numberOfDetectives; i++)
             {
                 int node = randomNode(startNodes);
-                players[i] = new Player(i, detectiveTickets, node);
+                players[i] = new Player(Player.PlayerType.DETECTIVE, i, detectiveTickets, node);
                 startNodes.add(node);
             }
-
             //Initialise Mr X
-            Player misterX = new Player(numberOfDetectives + 1, mrXTickets , randomNode(startNodes));
-            System.out.print("GAME SETUP COMPLETE");
+            players[i] = new Player(Player.PlayerType.MISTERX, i, mrXTickets, randomNode(startNodes));
             return true;
         }
         catch (Exception e)
@@ -96,11 +95,23 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
     }
 
     public List<Integer> getDetectiveIdList() {
-        return null;
+        List<Integer> output = new ArrayList<Integer>();
+        for(Player p : players)
+        {
+            if (p.getType().equals(Player.PlayerType.DETECTIVE))
+                output.add( p.getId() );
+        }
+        return output;
     }
 
     public List<Integer> getMrXIdList() {
-        return null;
+        List<Integer> output = new ArrayList<Integer>();
+        for(Player p : players)
+        {
+            if (p.getType().equals(Player.PlayerType.MISTERX))
+                output.add( p.getId() );
+        }
+        return output;
     }
 
     public Integer getNodeId(Integer playerId) {
