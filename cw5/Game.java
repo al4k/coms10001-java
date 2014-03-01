@@ -7,7 +7,11 @@ public class Game {
 		game.run(args);
 	}
 	
-	
+	/*
+	 * note: There are two temporary variables whose definitions need to be relocated
+	 *  line 83 (GameState) - sets the starting player
+	 *  line 49 (GUI) - sets number of detectives playing
+	 */
 	public void run(String[] args)
 	{
 		GameState state = new GameState();
@@ -17,8 +21,10 @@ public class Game {
         // Initialise and start GUI
         GUI gui = new GUI();
 		gui.registerMapVisualisable(state);
-        gui.registerInitialisable(state);
         gui.registerPlayerVisualisable(state);
+        gui.registerInitialisable(state);
+        gui.registerVisualisable(state);
+        gui.registerControllable(state);
 		gui.run();
 	}
 }

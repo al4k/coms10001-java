@@ -1,3 +1,4 @@
+import java.util.List;
 
 public class Player 
 {
@@ -7,10 +8,9 @@ public class Player
 	private int[] tickets;
 	private int node;
     private PlayerType type;
+    private List<Initialisable.TicketType> previousMoves;
 	
-	Player(PlayerType type, int id, int[] tickets, int startNode)
-	{
-		tickets = new int[Initialisable.TicketType.values().length];
+	Player(PlayerType type, int id, int[] tickets, int startNode) {
         this.type = type;
 		this.id = id;
 		this.node = startNode;
@@ -19,24 +19,26 @@ public class Player
 
     public PlayerType getType() { return type; }
 
-	public int getId()
-	{
-		return id;
-	}
+	public int getId() { return id; }
 	
-	public int getNode()
-	{
-		return node;
-	}
+	public int getNode() { return node; }
 
-	public int getTicketNum(Initialisable.TicketType type)
-	{
+	public int getTicketNum(Initialisable.TicketType type) {
 		return tickets[type.ordinal()];
 	}
 	
-	public void setTicketNum(Initialisable.TicketType type, int n)
-	{
+	public void setTicketNum(Initialisable.TicketType type, int n) {
 		tickets[type.ordinal()] = n;
+	}
+	
+	public List<Initialisable.TicketType> getPreviousMoves() {
+		return previousMoves;
+	}
+	
+	public boolean makeMove(Initialisable.TicketType moveType, int newNode) {
+		node = newNode;
+		previousMoves.add(moveType);
+		return node == newNode && previousMoves.contains(moveType);
 	}
 	
 }
