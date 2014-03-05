@@ -10,7 +10,6 @@ public class Game {
 	/*
 	 * note: There are two temporary variables whose definitions need to be relocated
 	 *  line 83 (GameState) - sets the starting player
-	 *  line 49 (GUI) - sets number of detectives playing
 	 */
 	public void run(String[] args)
 	{

@@ -11,12 +11,22 @@ public class Player
     private PlayerType type;
     private List<Initialisable.TicketType> previousMoves;
 	
-	Player(PlayerType type, int id, int[] tickets, int startNode) {
+	Player (PlayerType type, int id, int[] tickets, int startNode)
+	{
         this.type = type;
 		this.id = id;
 		this.node = startNode;
 		this.tickets = tickets;
         previousMoves = new ArrayList<Initialisable.TicketType>();
+	}
+	
+	Player (int id, PlayerType type, int startNode, List<Initialisable.TicketType> pastMoves, int[] tickets)
+	{
+		this.type = type;
+		this.id = id;
+		this.node = startNode;
+		this.tickets = tickets;
+        previousMoves = pastMoves;
 	}
 
     public PlayerType getType() { return type; }

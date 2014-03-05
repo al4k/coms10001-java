@@ -6,9 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * Main visualising class
@@ -17,17 +15,18 @@ import java.util.concurrent.*;
 public class GUI extends GameVisualiser {
 	private JFrame w;
     private JPanel sidebar;
-    private Box sidebarBox;
+    private Box statusBox;
     private Graphics2D gMap; // Use gMap to draw on the map
     private JPanel mapPanel;
     private Image img; // Original map image. Do not use directly, create a BufferedImage copy.
 
-		GUI(){
+		GUI()
+		{
 			w = new JFrame();
 			w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		}
 
-		private Image makeMapImage()
+		private Image readMapImage()
 		{
 			BufferedImage map = null;
 			String filename = mapVisualisable.getMapFilename();
@@ -40,37 +39,65 @@ public class GUI extends GameVisualiser {
 			return map;
 		}
 		
+		private void throwInitialisationPopup()
+		{
+			// Query number of players
+        	String[] options = {"1", "2", "3", "4", "5"};
+            String ticket = (String) JOptionPane.showInputDialog(w,
+            		"Select the number of detectives",
+            		"Game startup",
+                    JOptionPane.DEFAULT_OPTION,
+                    null,
+                    options,
+                    options[0]);
+            initialisable.initialiseGame( Integer.parseInt(ticket) );
+		}
+		
         private JButton makeInitButton()
         {
             JButton button = new JButton("Initialise game");
-            button.addActionListener(new ActionListener() {
+            button.addActionListener(new ActionListener()
+            {
                 @Override
-                public void actionPerformed(ActionEvent e) {
-                	//TODO  relocate. set to 3 for testing
-                    initialisable.initialiseGame(3);
+                public void actionPerformed(ActionEvent e)
+                {
+                	throwInitialisationPopup();
                     updateGameStatus();
                 }
             });
             return button;
         }
         
-        private void drawCircle(Graphics g, int x, int y, int radius)
+        private JButton makeSaveButton()
         {
-        	g.drawOval(x-(radius/2), y-(radius/2), radius, radius);
-        }
-        
-        private String listToString(java.util.List<Initialisable.TicketType> list)
-        {
-        	String output = "";
-        	int i;
-        	for(i=0; i<list.size(); i++) {
-        		output += list.get(i).name() + ", ";
-        	}
-        	//output += list.get(i).name();
-        	return output;
+        	JButton button = new JButton("Save game");
+            button.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                	saveGame();
+                }
+            });
+            return button;
         }
 
-        private Box currentStatusLabels()
+        private JButton makeLoadButton()
+        {
+        	JButton button = new JButton("Load game");
+            button.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                	loadGame();
+                	updateGameStatus();
+                }
+            });
+            return button;
+        }
+        
+        private Box makeCurrentPlayerLabels()
         {
             Box statusLabels = Box.createVerticalBox();
             Integer currentPlayerId = visualisable.getNextPlayerToMove();
@@ -88,13 +115,14 @@ public class GUI extends GameVisualiser {
             return statusLabels;
         }
 
-        private Box mrXStatusLabels()
+        private Box makeMrXStatusLabels()
         {
             Box mrXLabels = Box.createVerticalBox();
             mrXLabels.setBorder(new EmptyBorder(10,0,10,0));
 
             java.util.List<Integer> mrXIds = new ArrayList<Integer>( visualisable.getMrXIdList() );
-            for(int id : mrXIds) {
+            for(int id : mrXIds)
+            {
                 mrXLabels.add(new JLabel("Mr X details"));
                 mrXLabels.add(new JLabel("~~Tickets available~~"));
                 mrXLabels.add(new JLabel("Bus: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Bus, id)));
@@ -104,15 +132,26 @@ public class GUI extends GameVisualiser {
                 mrXLabels.add(new JLabel("Secret move: "+visualisable.getNumberOfTickets(Initialisable.TicketType.SecretMove, id)));
                 mrXLabels.add(new JLabel("~~Previous moves~~"));
 
-                if(visualisable.getMoveList(id) != null) {
-                    mrXLabels.add(new JLabel("previous moves: "+visualisable.getMoveList(id).toString()));
-                } else {
+                if( !visualisable.getMoveList(id).isEmpty() )
+                {
+                    mrXLabels.add(new JLabel(visualisable.getMoveList(id).toString()));
+                }
+                else
+                {
                     mrXLabels.add(new JLabel("no moves made"));
                 }
             }
             return mrXLabels;
         }
 
+        private void drawCircle(Graphics g, int x, int y, int radius) {
+        	g.drawOval(x-(radius/2), y-(radius/2), radius, radius);
+        }
+        
+        private void drawText(Graphics g, int x, int y, String text) {
+        	g.drawString(text, x, y);
+        }
+        
         private void updateGameStatus()
         {   
             // Reload map canvas (remove/add JLabel)
@@ -125,41 +164,71 @@ public class GUI extends GameVisualiser {
             Box labels = Box.createVerticalBox();
             labels.setBorder(new EmptyBorder(10,0,10,0));
             
-            gMap.setColor(Color.BLUE);
             gMap.setStroke(new BasicStroke(3));
+            Font f = new Font("", Font.BOLD, 14);
+            Color c = Color.BLUE;
+            gMap.setColor(c);
+            gMap.setFont(f);
             for(Integer id : playerVisualisable.getDetectiveIdList())
             {
                 labels.add(new JLabel("Detective id"+id+" : node "+playerVisualisable.getNodeId(id)));
                 int x = playerVisualisable.getLocationX(playerVisualisable.getNodeId(id));
                 int y = playerVisualisable.getLocationY(playerVisualisable.getNodeId(id));
                 drawCircle(gMap, x, y, 20);
+                
+                // Fancy paint to highlight current player
+                if(visualisable.getNextPlayerToMove() == id)
+                {
+                	gMap.setFont( new Font("", Font.BOLD, 20) );
+                	drawText(gMap, x+12, y+12, ">p"+id);
+                	gMap.setColor(Color.WHITE);
+                	drawCircle(gMap, x, y, 26);
+                	gMap.setColor(c);
+                	gMap.setFont(f);
+                }
+                else
+                {
+                	drawText(gMap, x+12, y+12, "p"+id);
+                }  
             }
 
             // Repaint MrX nodes
-            gMap.setColor(Color.RED);
+            c = Color.RED;
+            gMap.setColor(c);
             for(Integer id : playerVisualisable.getMrXIdList())
             {
                 labels.add(new JLabel("MrX id"+id+" : node "+playerVisualisable.getNodeId(id)));
                 int x = playerVisualisable.getLocationX(playerVisualisable.getNodeId(id));
                 int y = playerVisualisable.getLocationY(playerVisualisable.getNodeId(id));
                 drawCircle(gMap, x, y, 20);
+                
+                if(visualisable.getNextPlayerToMove() == id) {
+                	gMap.setFont( new Font("", Font.BOLD, 20) );
+                	drawText(gMap, x+12, y+12, ">p"+id);
+                	gMap.setColor(Color.WHITE);
+                	drawCircle(gMap, x, y, 26);
+                	gMap.setColor(c);
+                	gMap.setFont(f);
+                } else {
+                	drawText(gMap, x+12, y+12, "p"+id);
+                }  
             }
 
         	// Remove previous labels
-            if(sidebarBox.getComponentCount() > 3)
+            if(statusBox.getComponentCount() > 2)
             {
-                sidebarBox.remove(1);
-                sidebarBox.remove(1);
-                sidebarBox.remove(1);
+            	statusBox.remove(0);
+            	statusBox.remove(0);
+            	statusBox.remove(0);
             }
             
             // Repack
-            sidebarBox.add(labels);
+            statusBox.add(labels);
             //Add ticket details for current players
-            sidebarBox.add(currentStatusLabels());
+            statusBox.add(makeCurrentPlayerLabels());
             // Add ticket/move details for mr x
-            sidebarBox.add(mrXStatusLabels());
-            sidebarBox.revalidate();
+            statusBox.add(makeMrXStatusLabels());
+            statusBox.revalidate();
             w.pack();
         }
 
@@ -173,12 +242,25 @@ public class GUI extends GameVisualiser {
             return mapCopy;
         }
         
-        private void movePopup(final int fromNode)
+        private final Initialisable.TicketType[] moveOptions()
         {
-            Initialisable.TicketType[] options = {Initialisable.TicketType.Bus,
-                        Initialisable.TicketType.Taxi,
-                        Initialisable.TicketType.Underground};
+        	// Create array of valid tickets for current player
+        	java.util.List<Initialisable.TicketType> options = new ArrayList<Initialisable.TicketType>();
+        	options.add(Initialisable.TicketType.Bus);
+        	options.add(Initialisable.TicketType.Taxi);
+            options.add(Initialisable.TicketType.Underground);
+            if(visualisable.getMrXIdList().contains( visualisable.getNextPlayerToMove() ))
+            {
+            	options.add(Initialisable.TicketType.DoubleMove);
+            	options.add(Initialisable.TicketType.SecretMove);
+            }
+            return options.toArray(new Initialisable.TicketType[1]);
+        }
 
+        private void throwMovePopup(final int fromNode)
+        {
+        	// Display move-type selection query
+        	Initialisable.TicketType[] options = moveOptions();
             int ticket = JOptionPane.showOptionDialog(w, //Component parentComponent
                     "Ticket type",                          //Object message,
                     "Select a transport method",            //String title
@@ -188,17 +270,42 @@ public class GUI extends GameVisualiser {
                     options,                                //Object[] options,
                     options[1]);                            //Object initialValue
 
-            move(fromNode, options[ticket]);
+            makeMove(fromNode, options[ticket]);
         }
         
-        private void move(Integer nodeId, Initialisable.TicketType type)
+        private void makeMove(Integer nodeId, Initialisable.TicketType type)
         {
         	boolean success = controllable.movePlayer(visualisable.getNextPlayerToMove(), nodeId, type);
             if(success) {
                 updateGameStatus();
             } else {
-                JOptionPane.showMessageDialog(null, "Invalid move");
+                JOptionPane.showMessageDialog(null, "Invalid move. Try again");
             }
+        }
+        
+        private boolean saveGame()
+        {
+        	// Prompt user to choose file location
+        	JFileChooser fc = new JFileChooser();
+    		fc.setCurrentDirectory(new File("/home"));
+    		int selection = fc.showSaveDialog(null);
+    		if (selection == JFileChooser.APPROVE_OPTION)
+    		{
+    			return controllable.saveGame(fc.getSelectedFile().getAbsolutePath()+".txt");
+    		}
+        	return false;
+        }
+        
+        private boolean loadGame()
+        {
+        	JFileChooser fc = new JFileChooser();
+    		fc.setCurrentDirectory(new File("/home"));
+    		int selection = fc.showOpenDialog(null);
+    		if (selection == JFileChooser.APPROVE_OPTION)
+    		{
+    			return controllable.loadGame(fc.getSelectedFile().getAbsolutePath());
+    		}
+        	return false;
         }
         
 		public void run()
@@ -210,7 +317,7 @@ public class GUI extends GameVisualiser {
             
             // Setup map JPanel
             mapPanel = new JPanel();
-        	img = makeMapImage();
+        	img = readMapImage();
             JLabel mapLabel = new JLabel(new ImageIcon(createNewMapImage(img)));
             mapPanel.add(mapLabel);
             
@@ -219,13 +326,12 @@ public class GUI extends GameVisualiser {
 				public void mouseClicked(MouseEvent e) {
 		    		try {
                         int clickedNode = controllable.getNodeIdFromLocation(e.getX(), e.getY());
-                        movePopup(clickedNode);
+                        throwMovePopup(clickedNode);
 					} catch(Exception ex) {
 		    			System.err.println("Cannot invoke GameState method {"+ex);
 		    		}
 					
 				}
-
 				public void mouseEntered(MouseEvent arg0) {}
 				public void mouseExited(MouseEvent arg0) {}
 				public void mousePressed(MouseEvent arg0) {}
@@ -234,9 +340,16 @@ public class GUI extends GameVisualiser {
             
             // Setup sidebar JPanel
             sidebar = new JPanel();
-            sidebarBox = Box.createVerticalBox();
+            Box sidebarBox = Box.createVerticalBox();
             sidebarBox.add(makeInitButton());
+            sidebarBox.add(makeSaveButton());
+            sidebarBox.add(makeLoadButton());
+            
+            statusBox = Box.createVerticalBox();
+            sidebarBox.add(statusBox);
+            
             sidebar.add(sidebarBox);
+            
 
             // Add map and sidebar to display
 			display.add(mapPanel);
