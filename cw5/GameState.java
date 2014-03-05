@@ -62,17 +62,17 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
         return Integer.parseInt(s);
     }
 
-    private List<Integer> findNeighbourIds(Node n, Graph g)
+    private List<Integer> findNeighbourIds(int nodeId, Graph g)
     {
         List<Integer> output = new ArrayList<Integer>();
 
         for(Edge e : g.edges())
         {
-            if( e.id1().equals(n.name()) )
+            if( e.id1().equals(nodeId) )
             {
                 output.add( toInt(e.id2()) );
             }
-            else if(e.id2().equals(n.name()))
+            else if(e.id2().equals(nodeId))
             {
                 output.add( toInt(e.id1()) );
             }
@@ -108,7 +108,18 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
         }
         return false;
     }
-
+    
+    private Player.PlayerType getPlayerTypeAtNode(int nodeId)
+    {
+    	for (Player p : players)
+    	{
+    		if (p.getNode() == nodeId) {
+    			return p.getType();
+    		}
+    	}
+    	return null;
+    }
+    
 	private int randomNode(List<Integer> exclude)
     {
 		Random r = new Random();
@@ -208,9 +219,28 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
 		return null;
 	}
 
+	public boolean hasTicketsToMove(int playerId)
+	{
+		for ( int nb : findNeighbourIds(players[playerId].getNode(), graph) ) {
+			for ( TicketType type : TicketType.values() ) {
+				if( players[playerId].getTicketNum(type) > 0 )
+					return true;
+			}
+		}
+		return false;
+	}
+	
 	public Boolean isGameOver() {
-		// TODO Auto-generated method stub
-		return null;
+		for ( int i : getDetectiveIdList() )
+		{
+			for ( int j : getMrXIdList() )
+			{
+				if ( players[i].getNode() == players[j].getNode() )
+					return true;
+			}
+		}
+		//TODO add fail condition if detectives can no longer move
+		return false;
 	}
 
 	public Integer getNextPlayerToMove() {
@@ -218,8 +248,15 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
 	}
 
 	public Integer getWinningPlayerId() {
-		// TODO Auto-generated method stub
-		return null;
+		for ( int i : getDetectiveIdList() )
+		{
+			for ( int j : getMrXIdList() )
+			{
+				if ( players[i].getNode() == players[j].getNode() )
+					return i;
+			}
+		}
+		return -1;
 	}
 
 	private void nextTurn()
@@ -234,13 +271,19 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
 	@Override
 	public Boolean movePlayer(Integer playerId, Integer targetNodeId, TicketType ticketType)
 	{
-        if( canReachNode(graph, players[playerId].getNode(), targetNodeId, ticketType) &&
-                players[playerId].makeMove(ticketType, targetNodeId) )
-        {
-        	players[playerId].setTicketNum( ticketType, players[playerId].getTicketNum(ticketType) - 1);
-        	nextTurn();
-        	return true;
-        }
+		if( canReachNode(graph, players[playerId].getNode(), targetNodeId, ticketType) )
+		{
+			if ( getPlayerTypeAtNode(targetNodeId) == null ||
+					!getPlayerTypeAtNode(targetNodeId).equals( players[playerId].getType() ))
+			{
+				if ( players[playerId].makeMove(ticketType, targetNodeId) )
+				{
+					players[playerId].setTicketNum( ticketType, players[playerId].getTicketNum(ticketType) - 1);
+					nextTurn();
+					return true;
+				}
+			}
+		}
         return false;	
 	}
 
@@ -259,17 +302,19 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
     	}
     	return -1;
 	}
-
-    private java.util.List<Integer> getAllTickets(int id)
+	
+	// Return a list of ticket numbers indexed according to the TicketType enum
+    private List<Integer> getAllTickets(int playerId)
     {
     	java.util.List<Integer> ticketNum = new ArrayList<Integer>();
 		for (TicketType type : TicketType.values())
 		{
-			ticketNum.add(getNumberOfTickets(type, id));
+			ticketNum.add(getNumberOfTickets(type, playerId));
 		}
 		return ticketNum;
     }
     
+    // Convert a list to a string of comma separated values
     private <T> String listToStr(List<T> list)
     {
     	if ( list == null || list.isEmpty() ) { return null; }

@@ -278,9 +278,23 @@ public class GUI extends GameVisualiser {
         	boolean success = controllable.movePlayer(visualisable.getNextPlayerToMove(), nodeId, type);
             if(success) {
                 updateGameStatus();
+                if ( visualisable.isGameOver() ) {
+                	String message = "Game Over";
+                	if (visualisable.getDetectiveIdList().contains( visualisable.getWinningPlayerId() ) ) {
+                		message += ", Detectives won!";
+                	} else
+                		message += ", Mr X won!";
+                	JOptionPane.showMessageDialog(null, message);
+                	System.exit(0);
+                }
             } else {
                 JOptionPane.showMessageDialog(null, "Invalid move. Try again");
             }
+        }
+        
+        private void throwGameOverPopup(final boolean detectivesWin)
+        {
+        	
         }
         
         private boolean saveGame()
