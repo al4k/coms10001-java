@@ -69,7 +69,50 @@ public class GUI extends GameVisualiser {
         	//output += list.get(i).name();
         	return output;
         }
-        
+
+        private Box currentStatusLabels()
+        {
+            Box statusLabels = Box.createVerticalBox();
+            Integer currentPlayerId = visualisable.getNextPlayerToMove();
+            statusLabels.add(new JLabel("Current player: "+currentPlayerId));
+            statusLabels.add(new JLabel("~~Tickets available~~"));
+            statusLabels.add(new JLabel("Bus: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Bus, currentPlayerId)));
+            statusLabels.add(new JLabel("Taxi: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Taxi, currentPlayerId)));
+            statusLabels.add(new JLabel("Underground: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Underground, currentPlayerId)));
+
+            if(visualisable.getMrXIdList().contains(currentPlayerId))
+            {
+                statusLabels.add(new JLabel("Double move: "+visualisable.getNumberOfTickets(Initialisable.TicketType.DoubleMove, currentPlayerId)));
+                statusLabels.add(new JLabel("Secret move: "+visualisable.getNumberOfTickets(Initialisable.TicketType.SecretMove, currentPlayerId)));
+            }
+            return statusLabels;
+        }
+
+        private Box mrXStatusLabels()
+        {
+            Box mrXLabels = Box.createVerticalBox();
+            mrXLabels.setBorder(new EmptyBorder(10,0,10,0));
+
+            java.util.List<Integer> mrXIds = new ArrayList<Integer>( visualisable.getMrXIdList() );
+            for(int id : mrXIds) {
+                mrXLabels.add(new JLabel("Mr X details"));
+                mrXLabels.add(new JLabel("~~Tickets available~~"));
+                mrXLabels.add(new JLabel("Bus: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Bus, id)));
+                mrXLabels.add(new JLabel("Taxi: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Taxi, id)));
+                mrXLabels.add(new JLabel("Underground: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Underground, id)));
+                mrXLabels.add(new JLabel("Double move: "+visualisable.getNumberOfTickets(Initialisable.TicketType.DoubleMove, id)));
+                mrXLabels.add(new JLabel("Secret move: "+visualisable.getNumberOfTickets(Initialisable.TicketType.SecretMove, id)));
+                mrXLabels.add(new JLabel("~~Previous moves~~"));
+
+                if(visualisable.getMoveList(id) != null) {
+                    mrXLabels.add(new JLabel("previous moves: "+visualisable.getMoveList(id).toString()));
+                } else {
+                    mrXLabels.add(new JLabel("no moves made"));
+                }
+            }
+            return mrXLabels;
+        }
+
         private void updateGameStatus()
         {   
             // Reload map canvas (remove/add JLabel)
@@ -101,44 +144,7 @@ public class GUI extends GameVisualiser {
                 int y = playerVisualisable.getLocationY(playerVisualisable.getNodeId(id));
                 drawCircle(gMap, x, y, 20);
             }
-        
-            // Add ticket details for current player
-            Box statusLabels = Box.createVerticalBox();
-            Integer currentPlayerId = visualisable.getNextPlayerToMove();
-            statusLabels.add(new JLabel("Current player: "+currentPlayerId));
-            statusLabels.add(new JLabel("~~Tickets available~~"));
-            statusLabels.add(new JLabel("Bus: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Bus, currentPlayerId)));
-            statusLabels.add(new JLabel("Taxi: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Taxi, currentPlayerId)));
-            statusLabels.add(new JLabel("Underground: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Underground, currentPlayerId)));
-        	
-        	if(visualisable.getMrXIdList().contains(currentPlayerId))
-        	{
-        		statusLabels.add(new JLabel("Double move: "+visualisable.getNumberOfTickets(Initialisable.TicketType.DoubleMove, currentPlayerId)));
-        		statusLabels.add(new JLabel("Secret move: "+visualisable.getNumberOfTickets(Initialisable.TicketType.SecretMove, currentPlayerId)));
-        	}
-        	
-        	// Add ticket/move details for mr x
-        	Box mrXLabels = Box.createVerticalBox();
-        	mrXLabels.setBorder(new EmptyBorder(10,0,10,0));
-        	
-            java.util.List<Integer> mrXIds = new ArrayList<Integer>( visualisable.getMrXIdList() );
-            for(int id : mrXIds) {
-            	mrXLabels.add(new JLabel("Mr X details"));
-            	mrXLabels.add(new JLabel("~~Tickets available~~"));
-            	mrXLabels.add(new JLabel("Bus: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Bus, id)));
-            	mrXLabels.add(new JLabel("Taxi: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Taxi, id)));
-            	mrXLabels.add(new JLabel("Underground: "+visualisable.getNumberOfTickets(Initialisable.TicketType.Underground, id)));
-            	mrXLabels.add(new JLabel("Double move: "+visualisable.getNumberOfTickets(Initialisable.TicketType.DoubleMove, id)));
-            	mrXLabels.add(new JLabel("Secret move: "+visualisable.getNumberOfTickets(Initialisable.TicketType.SecretMove, id)));
-            	mrXLabels.add(new JLabel("~~Previous moves~~"));
-            	
-            	if(visualisable.getMoveList(id) != null) {
-        			mrXLabels.add(new JLabel("previous moves: "+visualisable.getMoveList(id).toString()));
-        		} else {
-        			mrXLabels.add(new JLabel("no moves made"));
-        		}
-            } 	
-        	
+
         	// Remove previous labels
             if(sidebarBox.getComponentCount() > 3)
             {
@@ -149,7 +155,10 @@ public class GUI extends GameVisualiser {
             
             // Repack
             sidebarBox.add(labels);
-            sidebarBox.add(statusLabels);
+            //Add ticket details for current players
+            sidebarBox.add(currentStatusLabels());
+            // Add ticket/move details for mr x
+            sidebarBox.add(mrXStatusLabels());
             sidebarBox.revalidate();
             w.pack();
         }
@@ -164,47 +173,32 @@ public class GUI extends GameVisualiser {
             return mapCopy;
         }
         
-        private void popup(final int fromNode)
+        private void movePopup(final int fromNode)
         {
-        	JFrame p = new JFrame();
-        	Box box = Box.createVerticalBox();     	
-        	JButton[] bs = new JButton[3];
-        	
-        	bs[1] = new JButton("Bus");
-        	bs[1].addActionListener(new ActionListener() {
-        		public void actionPerformed(ActionEvent e) {
-					move(fromNode, Initialisable.TicketType.Bus);
-				}
-        	});
-        	
-        	bs[2] = new JButton("Taxi");
-        	bs[2].addActionListener(new ActionListener() {
-        		public void actionPerformed(ActionEvent e) {
-					move(fromNode, Initialisable.TicketType.Taxi);
-				}
-        	});
-        	
-        	bs[3] = new JButton("Underground");
-        	bs[3].addActionListener(new ActionListener() {
-        		public void actionPerformed(ActionEvent e) {
-					move(fromNode, Initialisable.TicketType.Underground);
-				}
-        	});
-        	
-        	for(JButton b : bs) {
-        		box.add(b);
-        	}
-        	
-        	p.add(box);
-        	p.pack();
-        	w.setLocationByPlatform(true);
-			w.setVisible(true);
+            Initialisable.TicketType[] options = {Initialisable.TicketType.Bus,
+                        Initialisable.TicketType.Taxi,
+                        Initialisable.TicketType.Underground};
+
+            int ticket = JOptionPane.showOptionDialog(w, //Component parentComponent
+                    "Ticket type",                          //Object message,
+                    "Select a transport method",            //String title
+                    JOptionPane.DEFAULT_OPTION,             //int optionType
+                    JOptionPane.INFORMATION_MESSAGE,        //int messageType
+                    null,                                   //Icon icon,
+                    options,                                //Object[] options,
+                    options[1]);                            //Object initialValue
+
+            move(fromNode, options[ticket]);
         }
         
         private void move(Integer nodeId, Initialisable.TicketType type)
         {
-        	controllable.movePlayer(visualisable.getNextPlayerToMove(), nodeId, type);
-        	updateGameStatus();
+        	boolean success = controllable.movePlayer(visualisable.getNextPlayerToMove(), nodeId, type);
+            if(success) {
+                updateGameStatus();
+            } else {
+                JOptionPane.showMessageDialog(null, "Invalid move");
+            }
         }
         
 		public void run()
@@ -224,9 +218,10 @@ public class GUI extends GameVisualiser {
 
 				public void mouseClicked(MouseEvent e) {
 		    		try {
-		    			popup(controllable.getNodeIdFromLocation(e.getX(), e.getY()));
+                        int clickedNode = controllable.getNodeIdFromLocation(e.getX(), e.getY());
+                        movePopup(clickedNode);
 					} catch(Exception ex) {
-		    			System.err.println("Cannot invoke GameState method: Game not initialised");
+		    			System.err.println("Cannot invoke GameState method {"+ex);
 		    		}
 					
 				}

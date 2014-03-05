@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Player 
@@ -15,6 +16,7 @@ public class Player
 		this.id = id;
 		this.node = startNode;
 		this.tickets = tickets;
+        previousMoves = new ArrayList<Initialisable.TicketType>();
 	}
 
     public PlayerType getType() { return type; }
@@ -36,7 +38,7 @@ public class Player
 	}
 	
 	public boolean makeMove(Initialisable.TicketType moveType, int newNode) {
-		node = newNode;
+        node = newNode;
 		previousMoves.add(moveType);
 		return node == newNode && previousMoves.contains(moveType);
 	}

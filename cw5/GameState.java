@@ -16,10 +16,11 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
 	 * Vairable that will hold the filename for the map
 	 */
 	private String mapFilename;
-    Player[] players;
-    HashMap<Integer, Point> positions;
-    Player whoseTurn;
-	
+    private Player[] players;
+    private HashMap<Integer, Point> positions;
+    private Player whoseTurn;
+	private Graph graph;
+
 	/**
 	 * Concrete implementation of the MapVisualisable getMapFilename function
 	 * @return The map filename
@@ -45,11 +46,73 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
         positions = p.positions();
     }
 
-	private int randomNode(List<Integer> exclude) {
+    private void setGraph()
+    {
+        Reader r = new Reader();
+        try {
+            r.read("graph.txt");
+        } catch (Exception e) {
+            System.err.println("Error reading graph.txt");
+        }
+        graph = r.graph();
+    }
+
+    private int toInt(String s) {
+        return Integer.parseInt(s);
+    }
+
+    private String toString(Object o) {
+        return "" + o;
+    }
+
+    private List<Integer> findNeighbourIds(Node n, Graph g)
+    {
+        List<Integer> output = new ArrayList<Integer>();
+
+        for(Edge e : g.edges())
+        {
+            if( e.id1().equals(n.name()) ) {
+                output.add( toInt(e.id2()) );
+            }
+            else if(e.id2().equals(n.name())) {
+                output.add( toInt(e.id1()) );
+            }
+        }
+        return output;
+    }
+
+    private boolean canReachNode(Graph g, int fromNode, int toNode, TicketType ticketType)
+    {
+        List<Edge> connectingEdges = new ArrayList<Edge>();
+        // Check that nodes are connected
+        for(Edge e : g.edges())
+        {
+            if ( (toInt(e.id1()) == fromNode && toInt(e.id2()) == toNode) ||
+                    (toInt(e.id2()) == fromNode && toInt(e.id1()) == toNode) )
+            {
+                connectingEdges.add(e);
+            }
+        }
+
+        if (connectingEdges.isEmpty()) { return false; }
+
+        if ( ticketType.equals(TicketType.SecretMove) ||
+                ticketType.equals(TicketType.DoubleMove) ) {
+            return true;
+        }
+
+        for (Edge e : connectingEdges) {
+            if (e.type().toString().equals( ticketType.toString() ))
+                return true;
+        }
+        return false;
+    }
+
+	private int randomNode(List<Integer> exclude)
+    {
 		Random r = new Random();
 		int nodeNo = r.nextInt(200);
-		while(exclude.contains(nodeNo))
-		{
+		while(exclude.contains(nodeNo)) {
 			nodeNo = r.nextInt(200);
 		}
 		return nodeNo;
@@ -60,6 +123,7 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
         {
             // Reads pos.txt and renders positions for nodes
             setPositions();
+            setGraph();
 
             // Clear all game resources
             setMapFilename("");
@@ -153,7 +217,10 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
 	@Override
 	public Boolean movePlayer(Integer playerId, Integer targetNodeId,
 			TicketType ticketType) {
-		return players[playerId].makeMove(ticketType, targetNodeId);
+        players[playerId].setTicketNum( ticketType, players[playerId].getTicketNum(ticketType) - 1);
+
+		return canReachNode(graph, players[playerId].getNode(), targetNodeId, ticketType) &&
+                players[playerId].makeMove(ticketType, targetNodeId);
 	}
 
 	@Override
@@ -181,4 +248,6 @@ public class GameState implements MapVisualisable, PlayerVisualisable, Initialis
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+
 }
